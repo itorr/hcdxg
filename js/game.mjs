@@ -263,7 +263,7 @@ export class Game {
 					const v = Math.pow( Math.min( 1, Math.max(0.1, (
 						Math.abs(fruitBody.velocity.x) + 
 						Math.abs(fruitBody.velocity.y)
-					) / 20)) ,1.2);
+					) / 40)) ,1.2);
 		
 					// console.log('落地 v',v);
 					playEffect('气泡落地',0,v);
