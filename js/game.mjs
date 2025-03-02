@@ -2,6 +2,7 @@ import {
     loadAllEffects, 
     playOneEffectByGroupName, 
     playEffect,
+	stopAllEffects,
 } from './effects.mjs';
 import { lazy } from './lazy.mjs';
 import { randOne } from './randOne.mjs';
@@ -18,7 +19,7 @@ const devicePixelRatio = 2;
 // 默认水果物理参数
 const defaultFruitOptions = {
     restitution: 0.75, // 弹性
-    friction: 1, // 摩擦力
+    friction: 0.6, // 摩擦力
     density: 0.01, // 密度
 };
 
@@ -26,7 +27,7 @@ const defaultFruitOptions = {
 const wallOptions = {
     isStatic: true,
     restitution: 0.7, // 弹性
-    friction: 0.03 // 摩擦力
+    friction: 0 // 摩擦力
 };
 
 // 墙壁厚度
@@ -378,10 +379,13 @@ export class Game {
     score = 0;
     fruits = [];
     currentFruit = 0;
-    nextPos = { 
-        x: width / 2, 
-        y: 50 
-    };
+
+    x = width / 2;
+    y = 50;
+
+	lastX = width / 2;
+	lastY = 50;
+
     vx = 0;
 	vy = 0;
     lastCreated = 0;
@@ -402,6 +406,14 @@ export class Game {
 		this.vx = 0;
 		this.vy = 0;
 		this.lastCreated = +new Date();
+
+		
+		// 删除 world bodies 里所有的 label "Circle Body"
+		Matter.Composite.allBodies(this.world).forEach(body => {
+			if(body.label === 'Circle Body'){
+				Matter.World.remove(this.world, body);
+			}
+		});
 	}
 
 
@@ -493,9 +505,24 @@ export class Game {
 		return diff > this.creatediff;
 	}
 
+	caleV(){
+
+		// 根据之前的 x 获取当前 x 加速度
+		const vxSpeed = (this.lastX - this.x) / 10;
+		this.vx = this.vx * 0.5 + vxSpeed;
+	
+		// 根据之前的 y 获取当前 y 加速度
+		const vySpeed = (this.lastY - this.y) / 10;
+		this.vy = this.vy * 0.5 + vySpeed;
+
+		this.lastX = this.x;
+		this.lastY = this.y;
+	}
+
 
 	update(){
 		requestAnimationFrame(()=>this.update());
+		this.caleV();
 
 		const {
 			ctx,
@@ -544,8 +571,8 @@ export class Game {
 				this.drawFruit({
 					body: {
 						position: {
-							x: this.nextPos.x,
-							y: this.nextPos.y
+							x: this.x,
+							y: this.y
 						},
 						angle: 0,
 					},
@@ -576,6 +603,8 @@ export class Game {
 			}
 			return !removed;
 		})
+
+
 	}
 
 	isFruitOver(){
@@ -613,6 +642,7 @@ export class Game {
 			// 从上到下合并全部水果
 	
 			 
+
 			const step = () => {
 				const fruitsSorted = this.fruits.sort((a,b)=>a.body.position.y - b.body.position.y);
 	
@@ -645,6 +675,13 @@ export class Game {
 				this.timer = setTimeout(() => {
 					// 从世界删除
 					Matter.World.remove(this.world, [fruitA.body, fruitB.body, constraint]);
+
+					const v = Math.min( 1, Math.max(0.1, (
+						Math.abs(fruitA.body.velocity.x) +
+						Math.abs(fruitA.body.velocity.y)
+					) / 20));
+					const type = Math.floor( (fruitA.type + fruitB.type) / 2);
+					playEffect(fruitMixEffectNames[type],0,v);
 					this.fruits = this.fruits.filter(f => f !== fruitA && f !== fruitB);
 					step();
 				},100);
@@ -658,37 +695,47 @@ export class Game {
 
 	confirmGameOverLazy = lazy(this.confirmGameOver.bind(this), 1000);
 
-	onMouseMove(e){
-		
-		const rect = this.canvas.getBoundingClientRect();
+	move(x,y){
+
 		const fruitConfig = fruitConfigs[this.currentFruit];
 		const { size } = fruitConfig;
 		const sizeHalf = size / 2;
-		const x = Math.min(Math.max( e.clientX * this.scale - rect.left, sizeHalf ), width  - sizeHalf);
-		const y = Math.min(Math.max( e.clientY * this.scale - rect.top , sizeHalf ), height - sizeHalf);
-	
-		// 根据之前的 x 获取当前 x 加速度
-		const vxSpeed = (x - this.nextPos.x) / 10;
-		this.nextPos.x = x;
-		this.vx = this.vx * 0.5 + vxSpeed;
-	
-		// 根据之前的 y 获取当前 y 加速度
-		// const vySpeed = (y - this.nextPos.y) / 10;
-		// this.nextPos.y = y;
-		// this.vy = this.vy * 0.5 + vySpeed;
+		x = Math.min(Math.max( x , sizeHalf ), width  - sizeHalf);
+		y = Math.min(Math.max( y , sizeHalf ), height - sizeHalf);
+
+		this.x = x;
+		// this.y = y;
+	}
+	onMouseMove(e){
+		e.preventDefault();
+
+		const rect = this.canvas.getBoundingClientRect();
+		const x = (e.clientX - rect.left) * this.scale;
+		const y = (e.clientY - rect.top)  * this.scale;
+
+		this.move(x,y);
 	}
 
-	onClick(e){
+	onTouchMove(e){
+		e.preventDefault();
+
+		const touch = e.changedTouches[0];
+		const rect = this.canvas.getBoundingClientRect();
+		const x = (touch.clientX - rect.left) * this.scale;
+		const y = (touch.clientY - rect.top)  * this.scale;
+
+		this.move(x,y);
+	}
+
+	atack(x,y){
+
+		this.x = x;
+		
 		if(this.gameStatus === 'over') {
 			this.start();
 			return;
 		}
 
-
-		const rect = this.canvas.getBoundingClientRect();
-		const x = e.clientX * this.scale - rect.left;
-		const y = e.clientY * this.scale - rect.top;
-		
 		if(x > width-100 && y < 100) {
 			this.randCurrentFruit();
 			return;
@@ -696,20 +743,60 @@ export class Game {
 		
 		this.createFrultAndSaveLast();
 	}
+
+	onClick(e){
+		e.preventDefault();
+
+		const rect = this.canvas.getBoundingClientRect();
+		const x = (e.clientX - rect.left) * this.scale;
+		const y = (e.clientY - rect.top)  * this.scale;
+
+		this.atack(x,y);
+		
+	}
+
+	onTouchEnd(e){
+		e.preventDefault();
+
+		const touch = e.changedTouches[0];
+		const rect = this.canvas.getBoundingClientRect();
+		const x = (touch.clientX - rect.left) * this.scale;
+		const y = (touch.clientY - rect.top)  * this.scale;
+
+		this.atack(x,y);
+	}
 	onKeyup(e){
+		e.preventDefault();
+
 		if (e.key === ' ') {
-			this.createFrultAndSaveLast();
+			return this.createFrultAndSaveLast();
 		}
 		else if(e.key === 'r'){
-			this.randCurrentFruit();
+			return this.randCurrentFruit();
 		}
+		else if(/^\d+$/.test(e.key)){
+			const num = parseInt(e.key);
+			if(num >= 0 && num <= maxFruitType){
+				this.currentFruit = num;
+			}
+		}
+
+		this.createFrultAndSaveLast();
+
 	}
 	lisener(){
 		document.addEventListener('mousemove', this.onMouseMove.bind(this));
+		document.addEventListener('touchmove', this.onTouchMove.bind(this));
+
 		document.addEventListener('click', this.onClick.bind(this));
-		document.addEventListener('keyup', this.onKeyup.bind(this));
+		document.addEventListener('touchend', this.onTouchEnd.bind(this));
+
+		document.addEventListener('keydown', this.onKeyup.bind(this));
 
 		window.addEventListener('resize', this.resize.bind(this));
+
+		// touch once reload effects
+		document.addEventListener('touchmove', this.reloadEffects.bind(this), { once: true });
 		this.resize();
 	}
 
@@ -718,12 +805,12 @@ export class Game {
 		if(this.gameStatus === 'over') return;
 
 		const canCreate = this.getCanCreate();
-		// if (!canCreate) return;
+		if (!canCreate) return;
 	
 		this.createFruit({
-			x: this.nextPos.x,
-			y: this.nextPos.y,
-			vx: this.vx,
+			x: this.x,
+			y: this.y,
+			vx: -this.vx,
 			type: this.currentFruit
 		});
 		this.randCurrentFruit();
@@ -736,9 +823,13 @@ export class Game {
 	resize(){
 		const { canvas } = this;
 		const rect = canvas.getBoundingClientRect();
-		const scale = rect.width / width;
+		const scale = width / rect.width;
 		this.scale = scale;
 	}
-};
 
-new Game();
+	// 重载效果音
+	reloadEffects(e){
+		e.preventDefault();
+		stopAllEffects();
+	}
+};
