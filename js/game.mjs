@@ -194,6 +194,12 @@ export class Game {
 		const world = engine.world;
 		world.gravity.y = 1;
 
+		// 限定世界范围
+		world.bounds = {
+			min: { x: 0, y: 0 },
+			max: { x: width, y: height }
+		};
+
 
 		// 地面
 		const groundRectangle = Matter.Bodies.rectangle(

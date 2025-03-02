@@ -3,16 +3,16 @@
 <svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
 	 viewBox="0 0 640 480" enable-background="new 0 0 640 480" xml:space="preserve">
 <g>
-	<circle fill="none" stroke="#00CCCC" stroke-width="2" cx="66.5" cy="69.5" r="17.5"/>
-	<circle fill="none" stroke="#00CC88" stroke-width="2" cx="33" cy="103.5" r="22"/>
-	<circle fill="none" stroke="#00CC44" stroke-width="2" cx="34.5" cy="160.5" r="27.5"/>
-	<circle fill="none" stroke="#00CC00" stroke-width="2" cx="97.5" cy="121.5" r="34.5"/>
-	<circle fill="none" stroke="#44CC00" stroke-width="2" cx="184.5" cy="115.5" r="43"/>
-	<circle fill="none" stroke="#88CC00" stroke-width="2" cx="281.5" cy="163.5" r="53.5"/>
-	<circle fill="none" stroke="#CCCC00" stroke-width="2" cx="405.5" cy="121.5" r="66.5"/>
-	<circle fill="none" stroke="#CC8800" stroke-width="2" cx="548" cy="189" r="83"/>
-	<circle fill="none" stroke="#CC4400" stroke-width="2" cx="379" cy="299" r="104"/>
-	<circle fill="none" stroke="#CC0000" stroke-width="2" cx="137.5" cy="292.5" r="129.5"/>
+	<circle fill="none" stroke="#00CCCC" stroke-width="3" cx="66.5" cy="69.5" r="17.5"/>
+	<circle fill="none" stroke="#00CC88" stroke-width="3" cx="33" cy="103.5" r="22"/>
+	<circle fill="none" stroke="#00CC44" stroke-width="3" cx="34.5" cy="160.5" r="27.5"/>
+	<circle fill="none" stroke="#00CC00" stroke-width="3" cx="97.5" cy="121.5" r="34.5"/>
+	<circle fill="none" stroke="#44CC00" stroke-width="3" cx="184.5" cy="115.5" r="43"/>
+	<circle fill="none" stroke="#88CC00" stroke-width="3" cx="281.5" cy="163.5" r="53.5"/>
+	<circle fill="none" stroke="#CCCC00" stroke-width="3" cx="405.5" cy="121.5" r="66.5"/>
+	<circle fill="none" stroke="#CC8800" stroke-width="3" cx="548" cy="189" r="83"/>
+	<circle fill="none" stroke="#CC4400" stroke-width="3" cx="379" cy="299" r="104"/>
+	<circle fill="none" stroke="#CC0000" stroke-width="3" cx="137.5" cy="292.5" r="129.5"/>
 </g>
 <rect x="10" y="430" fill="#FFAC3E" width="24" height="40"/>
 <rect x="38" y="430" fill="#FFD199" width="24" height="40"/>
